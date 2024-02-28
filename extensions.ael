@@ -1,0 +1,108 @@
+// myaelconfig.ael
+
+context internal {
+   1122 => {
+      Answer();
+      Playback(hello-world);
+      //Set(HOSTNAME=${SHELL(hostname)});
+      //AGI(agi://172.22.16.1:9091/test.agi?server_name=${HOSTNAME});
+      AGI(agi://172.26.112.1:9091/test.agi);
+      Hangup();
+   };
+   
+   1111 => {
+   	Answer();
+   	AGI(agi://172.26.112.1:9091/test.agi);
+      	Hangup();
+   };
+   
+   _XXXX => {
+   	Answer();
+   	AGI(agi://172.26.112.1:9091/test.agi);
+   	Set(IS_BLACKLISTED=${CHANNEL(IS_BLACKLISTED)});
+   	if ("${IS_BLACKLISTED}" == "true") {
+        NoOp("The number is blacklisted");
+        
+    } else {
+        Dial(SIP/7002,10);
+        
+    }
+
+    Hangup();
+   	
+}
+   	
+   	00123 => {
+   	Answer();
+   	Playback(file);	
+   	//AGI(agi://172.25.64.1:9092/offers.agi?offerType=call);
+      	Hangup();
+   };
+   
+   555 => {
+        Answer();
+        Background(custom/welcomVoice);
+        AGI(agi://172.24.32.1:9092/balance.agi);
+        
+        Read(USER_LANG,hello-world, 1, 1, 5); 
+        
+        switch (${USER_LANG}) {
+            case 1:
+                Set(CHANNEL(language)=en);
+                break;
+            case 2:
+                Set(CHANNEL(language)=ur);
+                break;
+            default:
+                Set(CHANNEL(language)=custom);
+                break;
+        }
+       
+
+       // 1 => {
+       //     Set(CHANNEL(language)=en);
+       // }
+
+       // 2 => {
+       //     Set(CHANNEL(language)=ur);
+        //}
+
+       // _ => {
+        //    Set(CHANNEL(language)=custom);
+       // }
+        
+        
+       
+        //Verbose(${CHANNEL(language)});
+	//Set(CHANNEL(language)=custom);
+	//Playback(welcomVoice);
+	//Verbose(${CHANNEL(language)});
+        Background(beep);
+        
+        Read(USER_INPUT,custom/menu, 1, 1, 5); 
+        
+        switch (${USER_INPUT}) {
+            case 1:
+                Set(OFFER_TYPE=sms);
+                break;
+            case 2:
+                Set(OFFER_TYPE=call);
+                break;
+            default:
+                Set(OFFER_TYPE=unknown);
+                Background(custom/unknownOption);
+                break;
+        }
+       
+        
+       AGI(agi://172.24.32.1:9092/offers.agi?offerType=${OFFER_TYPE});
+
+        Hangup();
+    };
+    
+};
+
+
+
+
+
